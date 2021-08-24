@@ -46,6 +46,7 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
+						log.Println("start...")
 						runCmd(te)
 					}()
 				},
