@@ -34,6 +34,7 @@ func start(config *Config) {
 	}
 
 	config.pwd = dir
+	config.binDir = filepath.Join(config.pwd, "bin")
 	binPath := ""
 	if binPath, err = getBinPath(dir); err != nil {
 		log.Println("get local binary file failed, ", err)
@@ -151,7 +152,6 @@ func download(config *Config) (string, error) {
 	}
 	defer r.Body.Close()
 
-	config.binDir = filepath.Join(config.pwd, "bin")
 	_ = os.MkdirAll(config.binDir, os.ModePerm)
 	p := filepath.Join(config.binDir, obj.Name)
 	out, err := os.Create(p)
@@ -172,6 +172,7 @@ func download(config *Config) (string, error) {
 
 	log.Printf("[fetch] prepare to decompress %s", obj.Name)
 	p, err = extractTar(file, config)
+	defer file.Close()
 	if err != nil {
 		return "", err
 	}
@@ -259,8 +260,8 @@ func getBinPath(dir string) (string, error) {
 	if runtime.GOOS == "windows" {
 		ext = ".exe"
 	}
-	filePath := filepath.Join(dir, "bin", "client_"+runtime.GOOS+"_amd64" + ext)
-	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+	filePath := filepath.Join(dir, "bin", "client_"+runtime.GOOS+"_amd64"+ext)
+	file, err := os.Open(filePath)
 	defer file.Close()
 
 	if err == os.ErrNotExist {
@@ -270,7 +271,8 @@ func getBinPath(dir string) (string, error) {
 		return "", err
 	}
 
-	out, err := exec.Command(filePath, "-v").Output()
+	cmd := exec.Command(filePath, "-v")
+	out, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
