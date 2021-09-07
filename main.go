@@ -6,6 +6,7 @@ package main
 
 import (
 	"log"
+	"os/exec"
 )
 
 import (
@@ -16,9 +17,10 @@ import (
 type Config struct {
 	textEdit *walk.TextEdit
 	binPath  string
-	binDir  string
+	binDir   string
 	jsonPath string
 	pwd      string
+	cmd      *exec.Cmd
 }
 
 func main() {
@@ -33,8 +35,15 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
-						log.Println("start...")
 						start(&config)
+					}()
+				},
+			},
+			PushButton{
+				Text: "Stop",
+				OnClicked: func() {
+					go func() {
+						killCmd(&config)
 					}()
 				},
 			},

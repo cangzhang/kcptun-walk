@@ -55,6 +55,7 @@ func runCmd(bin string, config *Config) {
 	var wg sync.WaitGroup
 	args := []string{"-c", config.jsonPath}
 	cmd := exec.Command(bin, args...)
+	config.cmd = cmd
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		config.textEdit.AppendText(err.Error())
@@ -100,18 +101,22 @@ func runCmd(bin string, config *Config) {
 
 	wg.Wait()
 
-	defer killCmd(cmd, config)
+	defer killCmd(config)
 	if err := cmd.Wait(); err != nil {
 		config.textEdit.AppendText(err.Error())
 		return
 	}
 }
 
-func killCmd(cmd *exec.Cmd, config *Config) {
-	if err := cmd.Process.Kill(); err != nil {
-		config.textEdit.AppendText("failed to kill: " + string(cmd.Process.Pid))
+func killCmd(config *Config) {
+	err := config.cmd.Process.Kill()
+	if err != nil {
+		config.textEdit.AppendText("failed to kill: " + string(config.cmd.Process.Pid))
 		return
 	}
+
+	config.textEdit.AppendText("killed")
+	return
 }
 
 func download(config *Config) (string, error) {
