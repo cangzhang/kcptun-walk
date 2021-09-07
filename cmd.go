@@ -47,7 +47,7 @@ func start(config *Config) {
 
 	config.binPath = binPath
 	log.Println("[kcptun] binary path is: ", binPath)
-	config.jsonPath = filepath.Join(dir, "config.json")
+	config.jsonPath = filepath.Join(config.binDir, "config.json")
 	runCmd(binPath, config)
 }
 
@@ -120,7 +120,7 @@ func killCmd(config *Config) {
 }
 
 func download(config *Config) (string, error) {
-	log.Println("fetching latest binary...")
+	log.Println("[fetch] fetching latest binary...")
 	resp, err := http.Get(latestReleaseUrl)
 	if err != nil {
 		return "", err
@@ -141,7 +141,7 @@ func download(config *Config) (string, error) {
 			break
 		}
 	}
-	log.Printf("got latest version %s", result.TagName)
+	log.Printf("[fetch] got latest version %s", result.TagName)
 	r, err := http.Get(obj.BrowserDownloadURL)
 	if err != nil {
 		return "", err
@@ -163,14 +163,14 @@ func download(config *Config) (string, error) {
 	if _, err = io.Copy(out, r.Body); err != nil {
 		return "", err
 	}
-	log.Printf("downloaded tar %s", obj.Name)
+	log.Printf("[fetch] downloaded: %s", obj.Name)
 
 	file, err := os.Open(p)
 	if err != nil {
 		return "", err
 	}
 
-	log.Printf("prepare to decompress %s", obj.Name)
+	log.Printf("[fetch] prepare to decompress %s", obj.Name)
 	p, err = extractTar(file, config)
 	if err != nil {
 		return "", err
@@ -182,7 +182,7 @@ func download(config *Config) (string, error) {
 		}
 	}
 
-	log.Printf("decompressed")
+	log.Printf("[fetch] decompressed")
 	return p, nil
 }
 
@@ -255,7 +255,11 @@ func getTargetPkgName() string {
 }
 
 func getBinPath(dir string) (string, error) {
-	filePath := filepath.Join(dir, "bin", "client_"+runtime.GOOS+"_amd64")
+	ext := ""
+	if runtime.GOOS == "windows" {
+		ext = ".exe"
+	}
+	filePath := filepath.Join(dir, "bin", "client_"+runtime.GOOS+"_amd64" + ext)
 	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
 	defer file.Close()
 
