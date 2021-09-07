@@ -13,8 +13,16 @@ import (
 	. "github.com/lxn/walk/declarative"
 )
 
+type Config struct {
+	textEdit *walk.TextEdit
+	binPath  string
+	binDir  string
+	jsonPath string
+	pwd      string
+}
+
 func main() {
-	var te *walk.TextEdit
+	var config Config
 
 	if _, err := (MainWindow{
 		Title:  "Walk Clipboard Example",
@@ -22,36 +30,16 @@ func main() {
 		Layout: VBox{},
 		Children: []Widget{
 			PushButton{
-				Text: "Copy",
-				OnClicked: func() {
-					if err := walk.Clipboard().SetText(te.Text()); err != nil {
-						log.Print("Copy: ", err)
-					}
-				},
-			},
-			PushButton{
-				Text: "Paste",
-				OnClicked: func() {
-					if text, err := walk.Clipboard().Text(); err != nil {
-						log.Print("Paste: ", err)
-					} else {
-						if err := te.SetText(text); err != nil {
-							log.Println(err)
-						}
-					}
-				},
-			},
-			PushButton{
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
 						log.Println("start...")
-						start(te)
+						start(&config)
 					}()
 				},
 			},
 			TextEdit{
-				AssignTo: &te,
+				AssignTo: &config.textEdit,
 			},
 		},
 	}).Run(); err != nil {

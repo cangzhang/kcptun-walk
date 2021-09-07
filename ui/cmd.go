@@ -6,7 +6,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"errors"
-	"github.com/lxn/walk"
 	"io"
 	"io/ioutil"
 	"log"
@@ -26,43 +25,51 @@ const (
 	MacPkg           = "-darwin-amd64-"
 )
 
-func start(te *walk.TextEdit) {
+func start(config *Config) {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		config.textEdit.AppendText(err.Error())
+		return
 	}
 
+	config.pwd = dir
 	binPath := ""
 	if binPath, err = getBinPath(dir); err != nil {
-		log.Println("get binary file error: ", err)
+		log.Println("get local binary file failed, ", err)
 
-		binPath, err = download(dir)
+		binPath, err = download(config)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 	}
 
+	config.binPath = binPath
 	log.Println("[kcptun] binary path is: ", binPath)
-	config := filepath.Join(dir, "config.json")
-	runCmd(binPath, config, te)
+	config.jsonPath = filepath.Join(dir, "config.json")
+	runCmd(binPath, config)
 }
 
-func runCmd(bin string, config string, te *walk.TextEdit) {
+func runCmd(bin string, config *Config) {
 	var wg sync.WaitGroup
-	args := []string{"-c", config}
+	args := []string{"-c", config.jsonPath}
 	cmd := exec.Command(bin, args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		config.textEdit.AppendText(err.Error())
+		return
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatal(err)
+		config.textEdit.AppendText(err.Error())
+		return
 	}
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+		config.textEdit.AppendText(err.Error())
+		return
 	}
 
 	outScanner := bufio.NewScanner(stdout)
@@ -75,7 +82,7 @@ func runCmd(bin string, config string, te *walk.TextEdit) {
 			text := outScanner.Text()
 			log.Println(text)
 			if len(text) > 0 {
-				te.AppendText(text + "\n")
+				config.textEdit.AppendText(text + "\n")
 			}
 		}
 	}()
@@ -86,26 +93,28 @@ func runCmd(bin string, config string, te *walk.TextEdit) {
 			text := errScanner.Text()
 			log.Println(text)
 			if len(text) > 0 {
-				te.AppendText(text + "\n")
+				config.textEdit.AppendText(text + "\n")
 			}
 		}
 	}()
 
 	wg.Wait()
 
-	defer killCmd(cmd)
+	defer killCmd(cmd, config)
 	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
+		config.textEdit.AppendText(err.Error())
+		return
 	}
 }
 
-func killCmd(cmd *exec.Cmd) {
+func killCmd(cmd *exec.Cmd, config *Config) {
 	if err := cmd.Process.Kill(); err != nil {
-		log.Fatal("failed to kill: ", cmd.Process.Pid)
+		config.textEdit.AppendText("failed to kill: " + string(cmd.Process.Pid))
+		return
 	}
 }
 
-func download(dir string) (string, error) {
+func download(config *Config) (string, error) {
 	log.Println("fetching latest binary...")
 	resp, err := http.Get(latestReleaseUrl)
 	if err != nil {
@@ -137,9 +146,9 @@ func download(dir string) (string, error) {
 	}
 	defer r.Body.Close()
 
-	workDir := filepath.Join(dir, "bin")
-	_ = os.MkdirAll(workDir, os.ModePerm)
-	p := filepath.Join(dir, "bin", obj.Name)
+	config.binDir = filepath.Join(config.pwd, "bin")
+	_ = os.MkdirAll(config.binDir, os.ModePerm)
+	p := filepath.Join(config.binDir, obj.Name)
 	out, err := os.Create(p)
 	if err != nil {
 		return "", err
@@ -157,7 +166,7 @@ func download(dir string) (string, error) {
 	}
 
 	log.Printf("prepare to decompress %s", obj.Name)
-	p, err = ExtractTarGz(file, workDir)
+	p, err = extractTar(file, config)
 	if err != nil {
 		return "", err
 	}
@@ -172,10 +181,11 @@ func download(dir string) (string, error) {
 	return p, nil
 }
 
-func ExtractTarGz(gzipStream io.Reader, parentFolder string) (string, error) {
+func extractTar(gzipStream io.Reader, config *Config) (string, error) {
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
-		log.Fatal("ExtractTarGz: NewReader failed")
+		config.textEdit.AppendText("ExtractTarGz: NewReader failed")
+		return "", err
 	}
 
 	bin := ""
@@ -189,22 +199,26 @@ func ExtractTarGz(gzipStream io.Reader, parentFolder string) (string, error) {
 		}
 
 		if err != nil {
-			log.Fatalf("ExtractTarGz: Next() failed: %s", err.Error())
+			config.textEdit.AppendText("ExtractTarGz: NewReader failed " + err.Error())
+			return "", err
 		}
 
-		p := filepath.Join(parentFolder, header.Name)
+		p := filepath.Join(config.binDir, header.Name)
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.Mkdir(p, 0755); err != nil {
-				log.Fatalf("ExtractTarGz: Mkdir() failed: %s", err.Error())
+				config.textEdit.AppendText("ExtractTarGz: Mkdir() failed: " + err.Error())
+				return "", err
 			}
 		case tar.TypeReg:
 			outFile, err := os.Create(p)
 			if err != nil {
-				log.Fatalf("ExtractTarGz: Create() failed: %s", err.Error())
+				config.textEdit.AppendText("ExtractTarGz: Create() failed: " + err.Error())
+				return "", err
 			}
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				log.Fatalf("ExtractTarGz: Copy() failed: %s", err.Error())
+				config.textEdit.AppendText("ExtractTarGz: Copy() failed: " + err.Error())
+				return "", err
 			}
 			if strings.Contains(p, "client_") {
 				bin = p
@@ -212,7 +226,8 @@ func ExtractTarGz(gzipStream io.Reader, parentFolder string) (string, error) {
 			outFile.Close()
 
 		default:
-			log.Fatalf("ExtractTarGz: uknown type: %s in %s", header.Typeflag, header.Name)
+			config.textEdit.AppendText("ExtractTarGz: unknown type:" + string(header.Typeflag) + " " + header.Name)
+			return "", err
 		}
 
 	}
