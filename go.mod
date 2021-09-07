@@ -1,4 +1,4 @@
-module kctun-ui
+module kcptun-ui
 
 go 1.16
 
