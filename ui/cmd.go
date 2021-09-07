@@ -38,17 +38,18 @@ func start(te *walk.TextEdit) {
 
 		binPath, err = download(dir)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 
 	log.Println("[kcptun] binary path is: ", binPath)
-	runCmd(binPath, te)
+	config := filepath.Join(dir, "config.json")
+	runCmd(binPath, config, te)
 }
 
-func runCmd(bin string, te *walk.TextEdit) {
+func runCmd(bin string, config string, te *walk.TextEdit) {
 	var wg sync.WaitGroup
-	args := []string{"-c", "/Users/al/tmp/kcptun/la.json"}
+	args := []string{"-c", config}
 	cmd := exec.Command(bin, args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
