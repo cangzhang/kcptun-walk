@@ -38,7 +38,7 @@ func main() {
 			PushButton{
 				Text: "Run",
 				OnClicked: func() {
-					if config.cmd.Process.Pid > 0 {
+					if config.cmd != nil {
 						log.Println("current pid is ", config.cmd.Process.Pid)
 						config.logToTextarea("[kcptun] kcptun is running.")
 						return
