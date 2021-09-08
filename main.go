@@ -24,7 +24,7 @@ type Config struct {
 }
 
 func (config *Config) logToTextarea(text string) {
-	config.textEdit.AppendText("\n" + text + "\n")
+	config.textEdit.AppendText(text + "\r\n")
 }
 
 func main() {

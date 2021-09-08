@@ -15,6 +15,7 @@ func killCmd(config *Config) {
 	kill.Stdout = os.Stdout
 	if err := kill.Run(); err != nil {
 		log.Println(err.Error())
-		config.logToTextarea(err.Error() + "\n")
+		config.logToTextarea("kill cmd: " + err.Error())
+		return
 	}
 }
