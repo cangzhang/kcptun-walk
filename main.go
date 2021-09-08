@@ -15,16 +15,16 @@ import (
 )
 
 type Config struct {
-	textEdit      *walk.TextEdit
-	binPath       string
-	binDir        string
-	jsonPath      string
-	pwd           string
-	cmd           *exec.Cmd
+	textEdit *walk.TextEdit
+	binPath  string
+	binDir   string
+	jsonPath string
+	pwd      string
+	cmd      *exec.Cmd
 }
 
 func (config *Config) logToTextarea(text string) {
-	config.textEdit.AppendText(text + "\n")
+	config.textEdit.AppendText("\n" + text + "\n")
 }
 
 func main() {
@@ -39,6 +39,7 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
+						config.textEdit.SetReadOnly(true)
 						startCmd(&config)
 					}()
 				},
