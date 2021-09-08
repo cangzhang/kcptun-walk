@@ -51,7 +51,7 @@ func startCmd(config *Config) {
 
 	config.binPath = binPath
 	log.Println("[kcptun] binary path is: ", binPath)
-	config.jsonPath = filepath.Join(config.binDir, "config.json")
+	config.jsonPath = filepath.Join(config.pwd, "config.json")
 	runCmd(binPath, config)
 }
 

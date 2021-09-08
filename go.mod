@@ -1,4 +1,4 @@
-module kcptun-ui
+module kcptun-walk
 
 go 1.16
 

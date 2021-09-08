@@ -1,4 +1,6 @@
 .vscode/
 .idea/
-*.exe
 bin/
+
+*.exe
+*.json
