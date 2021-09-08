@@ -16,6 +16,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 const (
@@ -56,6 +57,7 @@ func runCmd(bin string, config *Config) {
 	var wg sync.WaitGroup
 	args := []string{"-c", config.jsonPath}
 	cmd := exec.Command(bin, args...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
 	config.cmd = cmd
 
 	stdout, err := cmd.StdoutPipe()
