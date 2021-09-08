@@ -32,11 +32,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	icon, err := walk.Resources.Icon("./assets/icon.ico")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mainWConfig := MainWindow{
 		AssignTo: &mainW,
 		Title:    "Kcptun Walk",
 		Size:     Size{300, 500},
 		Layout:   VBox{},
+		Icon:     icon,
 		Children: []Widget{
 			PushButton{
 				Text: "Run",
@@ -67,10 +73,6 @@ func main() {
 		},
 	}
 
-	icon, err := walk.Resources.Icon("./assets/icon.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
 	ni, err := walk.NewNotifyIcon(mainW)
 	if err != nil {
 		log.Fatal(err)
