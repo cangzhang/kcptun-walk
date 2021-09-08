@@ -1,6 +1,7 @@
 .vscode/
 .idea/
 bin/
+dist/
 
 *.exe
 *.json

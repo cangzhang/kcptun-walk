@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+      - build
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: v1.17
+
+      - name: Build
+        run: |
+          go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha=$(git rev-parse --short HEAD) -H=windowsgui"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: |
+            dist/*
