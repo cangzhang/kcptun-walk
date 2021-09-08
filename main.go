@@ -39,7 +39,7 @@ func main() {
 
 	mainWConfig := MainWindow{
 		AssignTo: &mainW,
-		Title:    "Kcptun Walk",
+		Title:    " Kcptun Walk",
 		Size:     Size{300, 500},
 		Layout:   VBox{},
 		Icon:     icon,
