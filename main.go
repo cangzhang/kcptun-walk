@@ -60,7 +60,7 @@ func main() {
 		Icon:     icon,
 		Children: []Widget{
 			TextLabel{
-				Text: "Version v" + tagName + "(" + sha + ")",
+				Text: "Version " + tagName + "(" + sha + ")",
 			},
 			PushButton{
 				Text: "Run",
