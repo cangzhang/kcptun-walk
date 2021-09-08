@@ -3,13 +3,10 @@
 package main
 
 import (
-	"log"
-	"os/exec"
-)
-
-import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"log"
+	"os/exec"
 )
 
 type Config struct {
@@ -22,6 +19,11 @@ type Config struct {
 	mainWin  *walk.MainWindow
 	tray     *walk.NotifyIcon
 }
+
+var (
+	tagName = "dev"
+	sha     = "0000000"
+)
 
 func (config *Config) logToTextarea(text string) {
 	config.textEdit.AppendText(text + "\r\n")
@@ -41,11 +43,14 @@ func main() {
 
 	mainWConfig := MainWindow{
 		AssignTo: &mainW,
-		Title:    " Kcptun Walk",
+		Title:    " Kcptun Walk ",
 		Size:     Size{300, 500},
 		Layout:   VBox{},
 		Icon:     icon,
 		Children: []Widget{
+			TextLabel{
+				Text: "Version v" + tagName + "(" + sha + ")",
+			},
 			PushButton{
 				Text: "Run",
 				OnClicked: func() {
