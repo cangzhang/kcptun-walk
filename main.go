@@ -15,19 +15,23 @@ import (
 )
 
 type Config struct {
-	textEdit *walk.TextEdit
-	binPath  string
-	binDir   string
-	jsonPath string
-	pwd      string
-	cmd      *exec.Cmd
+	textEdit      *walk.TextEdit
+	binPath       string
+	binDir        string
+	jsonPath      string
+	pwd           string
+	cmd           *exec.Cmd
+}
+
+func (config *Config) logToTextarea(text string) {
+	config.textEdit.AppendText(text + "\n")
 }
 
 func main() {
 	var config Config
 
 	if _, err := (MainWindow{
-		Title:  "Walk Clipboard Example",
+		Title:  "Kcptun Walk",
 		Size:   Size{300, 500},
 		Layout: VBox{},
 		Children: []Widget{
@@ -35,7 +39,7 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
-						start(&config)
+						startCmd(&config)
 					}()
 				},
 			},

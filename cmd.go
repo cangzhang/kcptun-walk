@@ -25,11 +25,11 @@ const (
 	MacPkg           = "-darwin-amd64-"
 )
 
-func start(config *Config) {
+func startCmd(config *Config) {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Println(err)
-		config.textEdit.AppendText(err.Error())
+		config.logToTextarea(err.Error())
 		return
 	}
 
@@ -60,18 +60,18 @@ func runCmd(bin string, config *Config) {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		config.textEdit.AppendText(err.Error())
+		config.logToTextarea(err.Error())
 		return
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		config.textEdit.AppendText(err.Error())
+		config.logToTextarea(err.Error())
 		return
 	}
 
 	if err := cmd.Start(); err != nil {
-		config.textEdit.AppendText(err.Error())
+		config.logToTextarea(err.Error())
 		return
 	}
 
@@ -85,7 +85,7 @@ func runCmd(bin string, config *Config) {
 			text := outScanner.Text()
 			log.Println(text)
 			if len(text) > 0 {
-				config.textEdit.AppendText(text + "\n")
+				config.logToTextarea(text)
 			}
 		}
 	}()
@@ -96,7 +96,7 @@ func runCmd(bin string, config *Config) {
 			text := errScanner.Text()
 			log.Println(text)
 			if len(text) > 0 {
-				config.textEdit.AppendText(text + "\n")
+				config.logToTextarea(text)
 			}
 		}
 	}()
@@ -105,7 +105,7 @@ func runCmd(bin string, config *Config) {
 
 	defer killCmd(config)
 	if err := cmd.Wait(); err != nil {
-		config.textEdit.AppendText(err.Error())
+		config.logToTextarea(err.Error())
 		return
 	}
 }
@@ -180,7 +180,7 @@ func download(config *Config) (string, error) {
 func extractTar(gzipStream io.Reader, config *Config) (string, error) {
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
-		config.textEdit.AppendText("ExtractTarGz: NewReader failed")
+		config.logToTextarea("ExtractTarGz: NewReader failed")
 		return "", err
 	}
 
@@ -195,7 +195,7 @@ func extractTar(gzipStream io.Reader, config *Config) (string, error) {
 		}
 
 		if err != nil {
-			config.textEdit.AppendText("ExtractTarGz: NewReader failed " + err.Error())
+			config.logToTextarea("ExtractTarGz: NewReader failed " + err.Error())
 			return "", err
 		}
 
@@ -203,17 +203,17 @@ func extractTar(gzipStream io.Reader, config *Config) (string, error) {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.Mkdir(p, 0755); err != nil {
-				config.textEdit.AppendText("ExtractTarGz: Mkdir() failed: " + err.Error())
+				config.logToTextarea("ExtractTarGz: Mkdir() failed: " + err.Error())
 				return "", err
 			}
 		case tar.TypeReg:
 			outFile, err := os.Create(p)
 			if err != nil {
-				config.textEdit.AppendText("ExtractTarGz: Create() failed: " + err.Error())
+				config.logToTextarea("ExtractTarGz: Create() failed: " + err.Error())
 				return "", err
 			}
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				config.textEdit.AppendText("ExtractTarGz: Copy() failed: " + err.Error())
+				config.logToTextarea("ExtractTarGz: Copy() failed: " + err.Error())
 				return "", err
 			}
 			if strings.Contains(p, "client_") {
@@ -222,7 +222,7 @@ func extractTar(gzipStream io.Reader, config *Config) (string, error) {
 			outFile.Close()
 
 		default:
-			config.textEdit.AppendText("ExtractTarGz: unknown type:" + string(header.Typeflag) + " " + header.Name)
+			config.logToTextarea("ExtractTarGz: unknown type:" + string(header.Typeflag) + " " + header.Name)
 			return "", err
 		}
 
