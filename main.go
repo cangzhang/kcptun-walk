@@ -33,7 +33,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	config.mainWin = mainW
 
 	icon, err := walk.Resources.Icon("./assets/icon.ico")
 	if err != nil {
@@ -96,15 +95,15 @@ func main() {
 			return
 		}
 
-		config.toggleVisible()
+		toggleVisible(mainW)
 	})
 
 	// toggle visible
-	config.addTrayAction("T&oggle visible", func() {
-		config.toggleVisible()
+	addTrayAction(tray, "T&oggle visible", func() {
+		toggleVisible(mainW)
 	})
 	// exit
-	config.addTrayAction("E&xit", func() {
+	addTrayAction(tray, "E&xit", func() {
 		walk.App().Exit(0)
 	})
 
@@ -113,25 +112,26 @@ func main() {
 	}
 
 	config.tray = tray
-	// Now that the icon is visible, we can bring up an info balloon.
-	//if err := tray.ShowInfo("App started", "Click the icon to toggle visibility"); err != nil {
-	//	log.Fatal(err)
-	//}
+	config.mainWin = mainW
 
 	if _, err := mainWConfig.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (config *Config) toggleVisible() {
-	if config.mainWin.Visible() {
-		config.mainWin.Hide()
+func toggleVisible(mainWin *walk.MainWindow) {
+	if mainWin.Visible() {
+		mainWin.Hide()
 	} else {
-		config.mainWin.Show()
+		mainWin.Show()
 	}
 }
 
-func (config *Config) addTrayAction(text string, cb func()) {
+func addTrayAction(tray *walk.NotifyIcon, text string, cb func()) {
+	if tray == nil {
+		return
+	}
+
 	action := walk.NewAction()
 	if err := action.SetText(text); err != nil {
 		log.Fatal(err)
@@ -139,7 +139,7 @@ func (config *Config) addTrayAction(text string, cb func()) {
 	action.Triggered().Attach(func() {
 		cb()
 	})
-	if err := config.tray.ContextMenu().Actions().Add(action); err != nil {
+	if err := tray.ContextMenu().Actions().Add(action); err != nil {
 		log.Fatal(err)
 	}
 }
