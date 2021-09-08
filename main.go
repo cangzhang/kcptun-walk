@@ -19,6 +19,8 @@ type Config struct {
 	jsonPath string
 	pwd      string
 	cmd      *exec.Cmd
+	mainWin  *walk.MainWindow
+	tray     *walk.NotifyIcon
 }
 
 func (config *Config) logToTextarea(text string) {
@@ -31,6 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	config.mainWin = mainW
 
 	icon, err := walk.Resources.Icon("./assets/icon.ico")
 	if err != nil {
@@ -73,71 +76,70 @@ func main() {
 		},
 	}
 
-	ni, err := walk.NewNotifyIcon(mainW)
+	tray, err := walk.NewNotifyIcon(mainW)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer ni.Dispose()
+	defer tray.Dispose()
 
-	if err := ni.SetIcon(icon); err != nil {
+	if err := tray.SetIcon(icon); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := ni.SetToolTip("Click for info or use the context menu to exit."); err != nil {
+	if err := tray.SetToolTip("App started"); err != nil {
 		log.Fatal(err)
 	}
 
 	// When the left mouse button is pressed, bring up our balloon.
-	ni.MouseDown().Attach(func(x, y int, button walk.MouseButton) {
+	tray.MouseUp().Attach(func(x, y int, button walk.MouseButton) {
 		if button != walk.LeftButton {
 			return
 		}
 
-		if err := ni.ShowCustom(
-			"Walk NotifyIcon Example",
-			"There are multiple ShowX methods sporting different icons.",
-			icon); err != nil {
-
-			log.Fatal(err)
-		}
+		config.toggleVisible()
 	})
 
 	// toggle visible
-	toggleAction := walk.NewAction()
-	if err := toggleAction.SetText("T&oggle visible"); err != nil {
-		log.Fatal(err)
-	}
-	toggleAction.Triggered().Attach(func() {
-		if mainW.Visible() {
-			mainW.Hide()
-		} else {
-			mainW.Show()
-		}
+	config.addTrayAction("T&oggle visible", func() {
+		config.toggleVisible()
 	})
-	if err := ni.ContextMenu().Actions().Add(toggleAction); err != nil {
-		log.Fatal(err)
-	}
-
-	exitAction := walk.NewAction()
-	if err := exitAction.SetText("E&xit"); err != nil {
-		log.Fatal(err)
-	}
-	exitAction.Triggered().Attach(func() {
+	// exit
+	config.addTrayAction("E&xit", func() {
 		walk.App().Exit(0)
 	})
-	if err := ni.ContextMenu().Actions().Add(exitAction); err != nil {
+
+	if err := tray.SetVisible(true); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := ni.SetVisible(true); err != nil {
-		log.Fatal(err)
-	}
+	config.tray = tray
 	// Now that the icon is visible, we can bring up an info balloon.
-	if err := ni.ShowInfo("Walk NotifyIcon Example", "Click the icon to show again."); err != nil {
-		log.Fatal(err)
-	}
+	//if err := tray.ShowInfo("App started", "Click the icon to toggle visibility"); err != nil {
+	//	log.Fatal(err)
+	//}
 
 	if _, err := mainWConfig.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (config *Config) toggleVisible() {
+	if config.mainWin.Visible() {
+		config.mainWin.Hide()
+	} else {
+		config.mainWin.Show()
+	}
+}
+
+func (config *Config) addTrayAction(text string, cb func()) {
+	action := walk.NewAction()
+	if err := action.SetText(text); err != nil {
+		log.Fatal(err)
+	}
+	action.Triggered().Attach(func() {
+		cb()
+	})
+	if err := config.tray.ContextMenu().Actions().Add(action); err != nil {
 		log.Fatal(err)
 	}
 }
