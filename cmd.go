@@ -60,7 +60,6 @@ func runCmd(bin string, config *Config) {
 	args := []string{"-c", config.jsonPath}
 	cmd := exec.Command(bin, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
-	config.cmd = cmd
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -106,9 +105,11 @@ func runCmd(bin string, config *Config) {
 	}()
 
 	wg.Wait()
+	config.cmd = cmd
 
 	defer killCmd(config)
 	if err := cmd.Wait(); err != nil {
+		config.cmd = nil
 		config.logToTextarea(err.Error())
 		return
 	}
