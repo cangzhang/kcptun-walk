@@ -6,14 +6,14 @@ Windows only, for now. [Icon from here.](https://www.iconfinder.com/icons/182507
 
 ## Build
 
-### Build executable
+### Build executable without cmd prompt 
 ```console
-go build -ldflags -H=windowsgui .
+go build -ldflags -H=windowsgui
 ```
 
-### Build with version
+### Build with tag name/version
 ```console
-go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha=$(git rev-parse --short HEAD)" -H=windowsgui
+go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha=$(git rev-parse --short HEAD) -H=windowsgui"
 ```
 
 ## Set exe icon
