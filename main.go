@@ -1,6 +1,4 @@
-// Copyright 2013 The Walk Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// +build windows
 
 package main
 
@@ -40,7 +38,7 @@ func main() {
 				OnClicked: func() {
 					if config.cmd != nil {
 						log.Println("current pid is ", config.cmd.Process.Pid)
-						config.logToTextarea("[kcptun] kcptun is running.")
+						config.logToTextarea("[kcptun] already running.")
 						return
 					}
 					go func() {
@@ -59,6 +57,7 @@ func main() {
 			TextEdit{
 				AssignTo: &config.textEdit,
 				ReadOnly: true,
+				VScroll: true,
 			},
 		},
 	}).Run(); err != nil {
