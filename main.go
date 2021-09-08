@@ -5,11 +5,12 @@ package main
 import (
 	"bytes"
 	_ "embed"
-	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
-	"image"
+	"image/png"
 	"log"
 	"os/exec"
+
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 )
 
 type Config struct {
@@ -28,7 +29,7 @@ var (
 	sha     = "0000000"
 )
 
-// go:embed ./assets/icon.png
+//go:embed assets/icon.png
 var appIcon []byte
 
 func (config *Config) logToTextarea(text string) {
@@ -42,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	img, _, err := image.Decode(bytes.NewReader(appIcon))
+	img, err := png.Decode(bytes.NewReader(appIcon))
 	if err != nil {
 		log.Fatal(err)
 	}
