@@ -4,7 +4,13 @@
 
 Windows only, for now. [Icon from here.](https://www.iconfinder.com/icons/182507/cat_walk_icon)
 
-## Run
+## Download
+
+https://github.com/cangzhang/kcptun-walk/releases/latest
+
+## Instruction
+
+[kcptun-walk](https://github.com/cangzhang/kcptun-walk/releases/latest) is another kcptun client GUI.
 
 1. rename your kcptun config as `config.json`
 2. place it together with `kcptun-walk.exe` 
