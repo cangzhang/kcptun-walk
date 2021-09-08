@@ -3,8 +3,11 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"image"
 	"log"
 	"os/exec"
 )
@@ -25,6 +28,9 @@ var (
 	sha     = "0000000"
 )
 
+// go:embed ./assets/icon.png
+var appIcon []byte
+
 func (config *Config) logToTextarea(text string) {
 	config.textEdit.AppendText(text + "\r\n")
 }
@@ -36,7 +42,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	icon, err := walk.Resources.Icon("./assets/icon.ico")
+	img, _, err := image.Decode(bytes.NewReader(appIcon))
+	if err != nil {
+		log.Fatal(err)
+	}
+	icon, err := walk.NewIconFromImageForDPI(img, 96)
 	if err != nil {
 		log.Fatal(err)
 	}

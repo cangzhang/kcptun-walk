@@ -25,5 +25,5 @@ go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha
 ## Set exe icon
 With [rsrc](https://github.com/akavel/rsrc):
 ```console
-rsrc.exe -ico assets/icon.ico
+rsrc -manifest mian.exe.manifest -ico assets/icon.ico -o rsrc.syso
 ```
