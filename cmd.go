@@ -57,6 +57,7 @@ func runCmd(bin string, config *Config) {
 	args := []string{"-c", config.jsonPath}
 	cmd := exec.Command(bin, args...)
 	config.cmd = cmd
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		config.textEdit.AppendText(err.Error())
@@ -107,17 +108,6 @@ func runCmd(bin string, config *Config) {
 		config.textEdit.AppendText(err.Error())
 		return
 	}
-}
-
-func killCmd(config *Config) {
-	err := config.cmd.Process.Kill()
-	if err != nil {
-		config.textEdit.AppendText("failed to kill: " + string(config.cmd.Process.Pid))
-		return
-	}
-
-	config.textEdit.AppendText("killed")
-	return
 }
 
 func download(config *Config) (string, error) {
