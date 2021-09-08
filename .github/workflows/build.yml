@@ -22,7 +22,7 @@ jobs:
 
       - name: Build
         run: |
-          go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha=$(git rev-parse --short HEAD) -H=windowsgui"
+          go build -ldflags="-X main.tagName=$(git describe --tags --abbrev=0) -X main.sha=$(git rev-parse --short HEAD) -H=windowsgui" -o dist/
 
       - uses: actions/upload-artifact@v2
         with:
