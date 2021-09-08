@@ -39,7 +39,6 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					go func() {
-						config.textEdit.SetReadOnly(true)
 						startCmd(&config)
 					}()
 				},
@@ -54,6 +53,7 @@ func main() {
 			},
 			TextEdit{
 				AssignTo: &config.textEdit,
+				ReadOnly: true,
 			},
 		},
 	}).Run(); err != nil {
