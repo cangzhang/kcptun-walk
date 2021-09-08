@@ -102,15 +102,33 @@ func main() {
 		}
 	})
 
-	// We put an exit action into the context menu.
+	// toggle visible
+	toggleAction := walk.NewAction()
+	if err := toggleAction.SetText("T&oggle visible"); err != nil {
+		log.Fatal(err)
+	}
+	toggleAction.Triggered().Attach(func() {
+		if mainW.Visible() {
+			mainW.Hide()
+		} else {
+			mainW.Show()
+		}
+	})
+	if err := ni.ContextMenu().Actions().Add(toggleAction); err != nil {
+		log.Fatal(err)
+	}
+
 	exitAction := walk.NewAction()
 	if err := exitAction.SetText("E&xit"); err != nil {
 		log.Fatal(err)
 	}
-	exitAction.Triggered().Attach(func() { walk.App().Exit(0) })
+	exitAction.Triggered().Attach(func() {
+		walk.App().Exit(0)
+	})
 	if err := ni.ContextMenu().Actions().Add(exitAction); err != nil {
 		log.Fatal(err)
 	}
+
 	if err := ni.SetVisible(true); err != nil {
 		log.Fatal(err)
 	}
