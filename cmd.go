@@ -31,7 +31,6 @@ const (
 func startCmd(config *Config) {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Println(err)
 		config.logToTextarea(err.Error())
 		return
 	}
@@ -41,10 +40,11 @@ func startCmd(config *Config) {
 	binPath := ""
 	if binPath, err = getBinPath(dir); err != nil {
 		log.Println("get local binary file failed, ", err)
+		config.logToTextarea("try to download from github.com")
 
 		binPath, err = download(config)
 		if err != nil {
-			log.Println(err)
+			config.logToTextarea(err.Error())
 			return
 		}
 	}
@@ -115,7 +115,7 @@ func runCmd(bin string, config *Config) {
 }
 
 func download(config *Config) (string, error) {
-	log.Println("[fetch] fetching latest binary...")
+	config.logToTextarea("[fetch] fetching latest binary...")
 	resp, err := http.Get(latestReleaseUrl)
 	if err != nil {
 		return "", err
@@ -136,7 +136,9 @@ func download(config *Config) (string, error) {
 			break
 		}
 	}
-	log.Printf("[fetch] got latest version %s", result.TagName)
+
+	config.logToTextarea("[fetch] got latest version " + result.TagName)
+
 	r, err := http.Get(obj.BrowserDownloadURL)
 	if err != nil {
 		return "", err
@@ -157,14 +159,15 @@ func download(config *Config) (string, error) {
 	if _, err = io.Copy(out, r.Body); err != nil {
 		return "", err
 	}
-	log.Printf("[fetch] downloaded: %s", obj.Name)
+	config.logToTextarea("[fetch] downloaded: " + obj.Name)
 
 	file, err := os.Open(p)
 	if err != nil {
 		return "", err
 	}
 
-	log.Printf("[fetch] prepare to decompress %s", obj.Name)
+	config.logToTextarea("[fetch] prepare to decompress " + obj.Name)
+
 	p, err = extractTar(file, config)
 	defer file.Close()
 	if err != nil {
@@ -177,7 +180,7 @@ func download(config *Config) (string, error) {
 		}
 	}
 
-	log.Printf("[fetch] decompressed")
+	config.logToTextarea("[fetch] decompressed")
 	return p, nil
 }
 

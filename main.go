@@ -33,6 +33,7 @@ var (
 var appIcon []byte
 
 func (config *Config) logToTextarea(text string) {
+	log.Println(text)
 	config.textEdit.AppendText(text + "\r\n")
 }
 
@@ -66,7 +67,7 @@ func main() {
 				Text: "Run",
 				OnClicked: func() {
 					if config.cmd != nil {
-						log.Println("current pid is ", config.cmd.Process.Pid)
+						config.logToTextarea("current pid is " + string(rune(config.cmd.Process.Pid)))
 						config.logToTextarea("[kcptun] already running.")
 						return
 					}

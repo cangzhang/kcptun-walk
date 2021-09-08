@@ -3,7 +3,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 
 func killCmd(config *Config) {
 	if config.cmd == nil {
-		log.Println("[kcptun] not running")
 		config.logToTextarea("[kcptun] not running")
 		return
 	}
@@ -20,7 +18,6 @@ func killCmd(config *Config) {
 	kill.Stderr = os.Stderr
 	kill.Stdout = os.Stdout
 	if err := kill.Run(); err != nil {
-		log.Println(err.Error())
 		config.logToTextarea("kill cmd: " + err.Error())
 		return
 	}
