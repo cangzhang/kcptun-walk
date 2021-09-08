@@ -38,6 +38,11 @@ func main() {
 			PushButton{
 				Text: "Run",
 				OnClicked: func() {
+					if config.cmd.Process.Pid > 0 {
+						log.Println("current pid is ", config.cmd.Process.Pid)
+						config.logToTextarea("[kcptun] kcptun is running.")
+						return
+					}
 					go func() {
 						startCmd(&config)
 					}()
