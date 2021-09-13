@@ -6,7 +6,8 @@ Windows only, for now. [Icon from here.](https://www.iconfinder.com/icons/182507
 
 ## Download
 
-![image](https://user-images.githubusercontent.com/1357073/133042844-3a314e56-f937-48ac-8441-88c08c2ef3f7.png)
+![image](https://user-images.githubusercontent.com/1357073/133043233-844fbb1a-82fb-4e5d-9e82-e29eebfbd010.png)
+
 
 https://github.com/cangzhang/kcptun-walk/releases/latest
 
